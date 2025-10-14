@@ -11,7 +11,7 @@ type CreateAuthorReq struct {
 		Bio  	string 			`json:"bio"`
 }
 
-type CreateAuthorRes struct {
+type DefaultAuthorRes struct {
 	ID 	string     	`json:"id"`
 	Name 	string     	`json:"name"`
 	Bio  	string 			`json:"bio"`
