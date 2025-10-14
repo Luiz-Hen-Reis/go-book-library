@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ErrUnexpectedError = errors.New("unexpected error when trying to create a new author")
+	ErrDuplicatedName = errors.New("this author already exists")
 )
 
 type AuthorService struct {
@@ -32,15 +32,14 @@ func (as *AuthorService) CreateAuthor(ctx context.Context, name, bio string) (au
 		Name: name,
 		Bio:  pgtype.Text{String: bio, Valid: true},
 	}
-
+	
 	author, err := as.queries.CreateAuthor(ctx, args)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
 
-		if errors.As(err, &pgErr) {
-			// criar um logger para logar a mensagem de erro
-			return authors.CreateAuthorRes{}, ErrUnexpectedError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return authors.CreateAuthorRes{}, ErrDuplicatedName
 		}
 
 		return authors.CreateAuthorRes{}, err

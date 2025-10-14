@@ -24,7 +24,7 @@ func (api *Api) handleCreateAuthor(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		if errors.Is(err, services.ErrUnexpectedError) {
+		if errors.Is(err, services.ErrDuplicatedName) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusUnprocessableEntity, map[string]any{
 				"error": err.Error(),
 			})
