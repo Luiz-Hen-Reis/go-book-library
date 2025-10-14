@@ -37,3 +37,19 @@ func (api *Api) handleCreateAuthor(w http.ResponseWriter, r *http.Request) {
 		"author": author,
 	})
 }
+
+func (api *Api) handleListAuthors(w http.ResponseWriter, r *http.Request) {
+	data, err := api.AuthorService.ListAuthors(r.Context())
+
+	if err != nil {
+		if errors.Is(err, services.ErrUnexpectedError) {
+			_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+				"error": err.Error(),
+			})
+		}
+	}
+
+	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
+		"authors": data,
+	})
+}

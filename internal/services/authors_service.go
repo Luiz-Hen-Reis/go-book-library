@@ -13,6 +13,7 @@ import (
 
 var (
 	ErrDuplicatedName = errors.New("this author already exists")
+	ErrUnexpectedError = errors.New("something unexpected happened")
 )
 
 type AuthorService struct {
@@ -27,7 +28,7 @@ func NewAuthorService(pool *pgxpool.Pool) AuthorService {
 	}
 }
 
-func (as *AuthorService) CreateAuthor(ctx context.Context, name, bio string) (authors.CreateAuthorRes, error) {
+func (as *AuthorService) CreateAuthor(ctx context.Context, name, bio string) (authors.DefaultAuthorRes, error) {
 	args := pgstore.CreateAuthorParams{
 		Name: name,
 		Bio:  pgtype.Text{String: bio, Valid: true},
@@ -39,15 +40,43 @@ func (as *AuthorService) CreateAuthor(ctx context.Context, name, bio string) (au
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return authors.CreateAuthorRes{}, ErrDuplicatedName
+			return authors.DefaultAuthorRes{}, ErrDuplicatedName
 		}
 
-		return authors.CreateAuthorRes{}, err
+		return authors.DefaultAuthorRes{}, err
 	}
 
-	return authors.CreateAuthorRes{
+	return authors.DefaultAuthorRes{
 		ID:   author.ID.String(),
 		Name: author.Name,
 		Bio:  author.Bio.String,
 	}, nil
+}
+
+func (as *AuthorService) ListAuthors(ctx context.Context) ([]authors.DefaultAuthorRes, error) {
+	authorsList, err := as.queries.ListAuthors(ctx)
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			return []authors.DefaultAuthorRes{}, ErrUnexpectedError
+		}
+
+		return []authors.DefaultAuthorRes{}, err
+	}
+
+	var authorResList []authors.DefaultAuthorRes
+
+	for _, v := range authorsList {
+		authorRes := authors.DefaultAuthorRes{
+			ID:   v.ID.String(),
+			Name: v.Name,
+			Bio:  v.Bio.String,
+		}
+
+		authorResList = append(authorResList, authorRes)
+	}
+
+	return authorResList, nil
 }
