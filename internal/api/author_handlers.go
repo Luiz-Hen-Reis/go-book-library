@@ -7,6 +7,7 @@ import (
 	"github.com/Luiz-Hen-Reis/go-book-library/internal/jsonutils"
 	"github.com/Luiz-Hen-Reis/go-book-library/internal/services"
 	"github.com/Luiz-Hen-Reis/go-book-library/internal/usecases/authors"
+	"github.com/go-chi/chi/v5"
 )
 
 func (api *Api) handleCreateAuthor(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +32,10 @@ func (api *Api) handleCreateAuthor(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		
+		_ = jsonutils.EncodeJson(w, r, http.StatusUnprocessableEntity, map[string]any{
+			"error": services.ErrUnexpectedError.Error(),
+		})
+		return
 	}
 	
 	_ = jsonutils.EncodeJson(w, r, http.StatusCreated, map[string]any{
@@ -46,10 +51,40 @@ func (api *Api) handleListAuthors(w http.ResponseWriter, r *http.Request) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
 				"error": err.Error(),
 			})
+			return
 		}
+
+		_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+			"error": services.ErrUnexpectedError.Error(),
+		})
+		return
 	}
 
 	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
 		"authors": data,
+	})
+}
+
+func (api *Api) handleGetAuthorByID (w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "id")
+
+	data, err := api.AuthorService.GetAuthorByID(r.Context(), idParam)
+
+	if err != nil {
+		if errors.Is(err, services.ErrUnexpectedError) {
+			_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
+		"author": data,
 	})
 }

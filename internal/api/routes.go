@@ -6,6 +6,7 @@ func (api *Api) BindRoutes() {
 	api.Router.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func (r chi.Router)  {
 			r.Get("/authors", api.handleListAuthors)
+			r.Get("/authors/{id}", api.handleGetAuthorByID)
 			r.Post("/authors", api.handleCreateAuthor)
 		})
 	})

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Luiz-Hen-Reis/go-book-library/internal/store/pgstore"
 	"github.com/Luiz-Hen-Reis/go-book-library/internal/usecases/authors"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,6 +15,7 @@ import (
 var (
 	ErrDuplicatedName = errors.New("this author already exists")
 	ErrUnexpectedError = errors.New("something unexpected happened")
+	ErrAuthorNotFound = errors.New("author not found for this ID")
 )
 
 type AuthorService struct {
@@ -79,4 +81,24 @@ func (as *AuthorService) ListAuthors(ctx context.Context) ([]authors.DefaultAuth
 	}
 
 	return authorResList, nil
+}
+
+func (as *AuthorService) GetAuthorByID (ctx context.Context, id string) (authors.DefaultAuthorRes, error) {
+	uuidUID, err := uuid.Parse(id)
+
+	if err != nil {
+		return authors.DefaultAuthorRes{}, err
+	}
+
+	author, err := as.queries.GetAuthorByID(ctx, uuidUID)
+
+	if err != nil {
+		return authors.DefaultAuthorRes{}, ErrAuthorNotFound
+	}
+
+	return authors.DefaultAuthorRes{
+		ID:   id,
+		Name: author.Name,
+		Bio:  author.Bio.String,
+	}, nil
 }
