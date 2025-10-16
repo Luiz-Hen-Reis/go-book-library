@@ -11,5 +11,5 @@ WHERE id = $1;
 SELECT * FROM authors
 ORDER BY name ASC;
 
--- name: DeleteAuthor :exec
+-- name: DeleteAuthor :execrows
 DELETE FROM authors WHERE id = $1;

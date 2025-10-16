@@ -88,3 +88,25 @@ func (api *Api) handleGetAuthorByID (w http.ResponseWriter, r *http.Request) {
 		"author": data,
 	})
 }
+
+func (api *Api) handleDeleteAuthorByID (w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "id")
+
+	err := api.AuthorService.DeleteAuthorByID(r.Context(), idParam)
+
+	if err != nil {
+		if errors.Is(err, services.ErrAuthorNotFound) {
+			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
+				"error": err.Error(),
+			})
+			return
+		}
+		
+		_ = jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	_ = jsonutils.EncodeJson(w, r, http.StatusNoContent, map[string]any{})
+}

@@ -8,6 +8,7 @@ func (api *Api) BindRoutes() {
 			r.Get("/authors", api.handleListAuthors)
 			r.Get("/authors/{id}", api.handleGetAuthorByID)
 			r.Post("/authors", api.handleCreateAuthor)
+			r.Delete("/authors/{id}", api.handleDeleteAuthorByID)
 		})
 	})
 }

@@ -102,3 +102,23 @@ func (as *AuthorService) GetAuthorByID (ctx context.Context, id string) (authors
 		Bio:  author.Bio.String,
 	}, nil
 }
+
+func (as *AuthorService) DeleteAuthorByID (ctx context.Context, id string) error  {
+	uuidUID, err := uuid.Parse(id)
+
+	if err != nil {
+		 return err
+	}
+
+	rows, err := as.queries.DeleteAuthor(ctx, uuidUID)
+
+	if err != nil {
+		return ErrUnexpectedError
+	}
+
+	if rows == 0 {
+		return ErrAuthorNotFound
+	}
+	
+	return nil
+}
